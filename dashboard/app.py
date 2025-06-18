@@ -31,7 +31,7 @@ section {
 /* Sticky clean navbar */
 .navbar {
   position: fixed;
-  top: 30px;
+  top: 70px;
   left: 0;
   width: 100%;
   background-color: #ffffff;
