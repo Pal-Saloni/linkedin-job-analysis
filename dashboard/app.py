@@ -8,7 +8,7 @@ st.set_page_config(layout="wide", page_title="LinkedIn Job Dashboard")
 # Load Data
 @st.cache_data
 def load_data():
-    return pd.read_csv("../cleaned/cleaned_jobs.csv")
+    return pd.read_csv("https://raw.githubusercontent.com/Pal-Saloni/linkedin-job-analysis/main/cleaned/cleaned_jobs.csv")
 
 df = load_data()
 
