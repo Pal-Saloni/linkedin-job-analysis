@@ -97,7 +97,7 @@ pip install -r requirements.txt
 
 Have questions, suggestions, or want to collaborate?
 
-Feel free to connect on [LinkedIn](https://linkedin.com) or drop a message.
+Feel free to connect on [LinkedIn](https://www.linkedin.com/in/saloni-pal-6b58352b4) or drop a message.
 
 ---
 
