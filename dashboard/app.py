@@ -1,11 +1,16 @@
+# app.py
+
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from collections import Counter
+import re
+from wordcloud import WordCloud
 
 st.set_page_config(layout="wide", page_title="LinkedIn Job Dashboard")
 
-# --- Load Data ---
+# Load Data
 @st.cache_data
 def load_data():
     url = "https://raw.githubusercontent.com/Pal-Saloni/linkedin-job-analysis/main/cleaned/cleaned_jobs.csv"
@@ -13,109 +18,111 @@ def load_data():
 
 df = load_data()
 
-# --- Apply Weights and Scoring ---
-weights = {
-    'salary': 1.0,
-    'title': 0.5,
-    'company_name': 0.5,
-    'description': 0.5,
-    'job_type': 0.5,         # corresponds to ONSITE REMOTE
-    'location': 0.5,
-    'criteria': 0.5,
-    'post_date': 0.5,
-    'link': 0.5,
-}
+# Sidebar filters
+with st.sidebar:
+    st.header("🔎 Filters")
+    location_filter = st.multiselect("Select Location(s)", options=df['LOCATION'].dropna().unique())
+    job_type_filter = st.multiselect("Select Job Type(s)", options=df['ONSITE REMOTE'].dropna().unique())
 
-def compute_score(row):
-    score = 0
-    if 'salary' in row and pd.notna(row['salary']):
-        score += weights['salary']
-    if 'job_type' in row and "remote" in str(row['job_type']).lower():
-        score += weights['job_type']
-    if 'title' in row and pd.notna(row['title']):
-        score += weights['title']
-    if 'company_name' in row and pd.notna(row['company_name']):
-        score += weights['company_name']
-    if 'description' in row and pd.notna(row['description']):
-        score += weights['description']
-    if 'location' in row and pd.notna(row['location']):
-        score += weights['location']
-    if 'criteria' in row and pd.notna(row['criteria']):
-        score += weights['criteria']
-    if 'post_date' in row and pd.notna(row['post_date']):
-        score += weights['post_date']
-    if 'link' in row and pd.notna(row['link']):
-        score += weights['link']
-    return score
+# Apply filters
+if location_filter:
+    df = df[df['LOCATION'].isin(location_filter)]
+if job_type_filter:
+    df = df[df['ONSITE REMOTE'].isin(job_type_filter)]
 
-df['score'] = df.apply(compute_score, axis=1)
-
-# --- Dashboard Title ---
+# Title
 st.title("🔍 LinkedIn Job Market Dashboard")
 
 # --- KPIs ---
 st.markdown("### 📊 Key Metrics")
 col1, col2, col3 = st.columns(3)
 col1.metric("Total Job Postings", len(df))
-if 'job_type' in df.columns:
-    col2.metric("Remote Jobs", df['job_type'].str.contains("Remote", case=False, na=False).sum())
-else:
-    col2.metric("Remote Jobs", "N/A")
-col3.metric("Top Hiring Location", df['location'].value_counts().idxmax() if 'location' in df.columns else "N/A")
+col2.metric("Remote Jobs", df['ONSITE REMOTE'].str.contains("Remote", case=False, na=False).sum())
+col3.metric("Top Hiring Location", df['LOCATION'].value_counts().idxmax())
 
 st.divider()
 
 # --- Top Job Titles ---
-if 'title' in df.columns:
-    st.subheader("💼 Top Job Titles")
-    top_titles = df['title'].value_counts().head(10)
-    st.bar_chart(top_titles)
+st.subheader("💼 Top Job Titles")
+top_titles = df['TITLE'].value_counts().head(10)
+st.bar_chart(top_titles)
 
 # --- Top Companies ---
-if 'company_name' in df.columns:
-    st.subheader("🏢 Top Hiring Companies")
-    top_companies = df['company_name'].value_counts().head(10)
-    st.bar_chart(top_companies)
+st.subheader("🏢 Top Hiring Companies")
+top_companies = df['COMPANY'].value_counts().head(10)
+st.bar_chart(top_companies)
 
 # --- Location Chart ---
-if 'location' in df.columns:
-    st.subheader("📍 Top Job Locations")
-    top_locations = df['location'].value_counts().head(10)
-    fig, ax = plt.subplots()
-    sns.barplot(x=top_locations.values, y=top_locations.index, ax=ax, palette="Blues_d")
-    ax.set_xlabel("Number of Jobs")
-    st.pyplot(fig)
+st.subheader("📍 Top Job Locations")
+top_locations = df['LOCATION'].value_counts().head(10)
+fig, ax = plt.subplots()
+sns.barplot(x=top_locations.values, y=top_locations.index, ax=ax, palette="Blues_d")
+ax.set_xlabel("Number of Jobs")
+st.pyplot(fig)
 
-# --- Remote vs Onsite Pie ---
-if 'job_type' in df.columns:
-    st.subheader("🏠 Remote vs Onsite Jobs")
-    remote_data = df['job_type'].dropna().str.lower().value_counts()
-    fig2, ax2 = plt.subplots()
-    ax2.pie(remote_data, labels=remote_data.index, autopct='%1.1f%%', startangle=140)
-    ax2.axis("equal")
-    st.pyplot(fig2)
+# --- Remote vs Onsite ---
+st.subheader("🏠 Remote vs Onsite Jobs")
+remote_data = df['ONSITE REMOTE'].dropna().str.lower().value_counts()
+fig2, ax2 = plt.subplots()
+ax2.pie(remote_data, labels=remote_data.index, autopct='%1.1f%%', startangle=140)
+ax2.axis("equal")
+st.pyplot(fig2)
 
-# --- Date Trend Line ---
-if 'post_date' in df.columns:
+# --- Date Trends ---
+if 'POSTED DATE' in df.columns:
     st.subheader("📅 Job Postings Over Time")
-    df['post_date'] = pd.to_datetime(df['post_date'], errors='coerce')
-    time_trend = df.groupby(df['post_date'].dt.to_period('M')).size()
+    df['POSTED DATE'] = pd.to_datetime(df['POSTED DATE'], errors='coerce')
+    time_trend = df.groupby(df['POSTED DATE'].dt.to_period('M')).size()
     st.line_chart(time_trend)
 
-# --- WordCloud ---
+# --- Weighted Job Score ---
+required_cols = {'SALARY', 'TITLE', 'COMPANY', 'DESCRIPTION', 'ONSITE REMOTE', 'LOCATION', 'CRITERIA', 'POSTED DATE', 'LINK'}
+if required_cols.issubset(df.columns):
+    df['job_score'] = (
+        df['SALARY'].fillna(0) * 1.0 +
+        df['TITLE'].fillna(0) * 0.5 +
+        df['COMPANY'].fillna(0) * 0.5 +
+        df['DESCRIPTION'].fillna(0) * 0.5 +
+        df['ONSITE REMOTE'].fillna(0) * 0.5 +
+        df['LOCATION'].fillna(0) * 0.5 +
+        df['CRITERIA'].fillna(0) * 0.5 +
+        df['POSTED DATE'].fillna(0) * 0.5 +
+        df['LINK'].fillna(0) * 0.5
+    )
+    st.subheader("📈 Top Jobs by Weighted Score")
+    top_jobs = df.sort_values("job_score", ascending=False).head(10)
+    st.dataframe(top_jobs[['TITLE', 'COMPANY', 'LOCATION', 'job_score']])
+
+# --- Common Criteria Analysis ---
+if 'CRITERIA' in df.columns:
+    st.subheader("📌 Most Common Criteria in Job Posts")
+    all_criteria = ' '.join(df['CRITERIA'].dropna()).lower()
+    words = re.findall(r'\b[a-z]{3,}\b', all_criteria)
+    common_criteria = Counter(words).most_common(10)
+    crit_df = pd.DataFrame(common_criteria, columns=['Criteria', 'Count'])
+    fig_crit, ax_crit = plt.subplots()
+    sns.barplot(x='Count', y='Criteria', data=crit_df, ax=ax_crit, palette='Greens_r')
+    st.pyplot(fig_crit)
+
+# --- Heatmap by Company and Location ---
+if {'COMPANY', 'LOCATION'}.issubset(df.columns):
+    st.subheader("🌍 Heatmap: Companies Hiring by Location")
+    heatmap_data = df.groupby(['COMPANY', 'LOCATION']).size().unstack(fill_value=0)
+    fig_heat, ax_heat = plt.subplots(figsize=(12, 8))
+    sns.heatmap(heatmap_data, cmap="YlGnBu", ax=ax_heat)
+    ax_heat.set_xlabel("Location")
+    ax_heat.set_ylabel("Company")
+    st.pyplot(fig_heat)
+
+# --- Description WordCloud (Optional) ---
 show_wc = st.checkbox("Show Word Cloud from Job Descriptions")
-if show_wc and 'description' in df.columns:
-    from wordcloud import WordCloud
-    text = ' '.join(df['description'].dropna())
+if show_wc and 'DESCRIPTION' in df.columns:
+    text = ' '.join(df['DESCRIPTION'].dropna().astype(str))
     wc = WordCloud(max_words=100, background_color='white').generate(text)
     fig_wc, ax_wc = plt.subplots()
     ax_wc.imshow(wc, interpolation='bilinear')
     ax_wc.axis("off")
     st.pyplot(fig_wc)
-
-# --- Top Scored Jobs Table ---
-st.subheader("⭐ Top Scored Jobs")
-st.dataframe(df.sort_values(by='score', ascending=False).head(10))
 
 st.markdown("---")
 st.caption("Made by Saloni Pal | Data Source: LinkedIn")
