@@ -1,0 +1,25 @@
+matplotlib
+pandas
+scikit-learn
+seaborn
+wordcloud
+
+pandas
+    # Used in: 01_data_cleaning, 02_eda_visualizations, 03_text_analysis
+    # Used for loading, cleaning, manipulating, and analyzing job dataset in all steps.
+
+matplotlib
+    # Used in: 02_eda_visualizations, 03_text_analysis
+    # Used for plotting visualizations such as bar charts, line plots, and word clouds.
+
+seaborn
+    # Used in: 02_eda_visualizations, 03_text_analysis
+    # Used for aesthetically pleasing statistical visualizations like bar plots.
+
+wordcloud
+    # Used in: 03_text_analysis
+    # Used to generate word clouds from job titles and descriptions.
+
+scikit-learn
+    # Used in: 03_text_analysis
+    # Used to compute TF-IDF scores to identify important terms in job 
