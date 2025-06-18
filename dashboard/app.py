@@ -10,6 +10,41 @@ from wordcloud import WordCloud
 
 st.set_page_config(layout="wide", page_title="LinkedIn Job Dashboard")
 
+# --- Custom Top Nav ---
+st.markdown(
+    """
+    <style>
+    .main-header {
+        background-color: #f5f5f5;
+        padding: 1rem 2rem;
+        border-bottom: 1px solid #ddd;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .main-header h2 {
+        margin: 0;
+        font-size: 1.8rem;
+        color: #333;
+    }
+    .main-header a {
+        margin-left: 15px;
+        text-decoration: none;
+        font-weight: 500;
+        color: #0A66C2;
+    }
+    </style>
+    <div class="main-header">
+        <h2>Saloni Pal</h2>
+        <div>
+            <a href="https://www.linkedin.com/in/saloni-pal-6b58352b4" target="_blank">LinkedIn</a>
+            <a href="https://github.com/Pal-Saloni" target="_blank">GitHub</a>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 # Load Data
 @st.cache_data
 def load_data():
@@ -20,9 +55,9 @@ df = load_data()
 
 # Sidebar filters
 with st.sidebar:
-    st.header("🔎 Filters")
-    location_filter = st.multiselect("Select Location(s)", options=df['LOCATION'].dropna().unique())
-    job_type_filter = st.multiselect("Select Job Type(s)", options=df['ONSITE REMOTE'].dropna().unique())
+    st.markdown("### 🔽 `>> Filter Jobs`")
+    location_filter = st.multiselect("🌍 Select Location(s)", options=df['LOCATION'].dropna().unique())
+    job_type_filter = st.multiselect("🏠 Select Job Type(s)", options=df['ONSITE REMOTE'].dropna().unique())
 
 # Apply filters
 if location_filter:
@@ -31,7 +66,7 @@ if job_type_filter:
     df = df[df['ONSITE REMOTE'].isin(job_type_filter)]
 
 # Title
-st.title("🔍 LinkedIn Job Market Dashboard")
+st.markdown("## 🔍 LinkedIn Job Market Dashboard")
 
 # --- KPIs ---
 st.markdown("### 📊 Key Metrics")
