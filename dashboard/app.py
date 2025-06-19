@@ -43,7 +43,7 @@ st.markdown("""
         .logo {
             font-family: 'Pacifico', cursive;
             font-size: 24px;
-            color: #1f2937;
+            color: #edf2f5;
         }
 
         .nav-icons {
@@ -54,12 +54,12 @@ st.markdown("""
 
         .nav-icons a {
             text-decoration: none;
-            color: #1f2937;
+            color: #edf2f5;
             font-size: 20px;
         }
 
         .nav-icons a:hover {
-            color: #2563eb;
+            color: #d3e0eb;
         }
 
         .hamburger {
@@ -123,8 +123,8 @@ st.markdown("""
     <div class="navbar">
         <div class="logo">Saloni Pal</div>
         <div class="nav-icons">
-            <a href="https://github.com/Pal-Saloni" target="_blank" title="GitHub Profile">🐱‍💻</a>
-            <a href="https://www.linkedin.com/in/salonipal07/" target="_blank" title="LinkedIn Profile">💼</a>
+            <a href="https://github.com/Pal-Saloni" target="_blank" title="GitHub Profile">Github</a>
+            <a href="https://www.linkedin.com/in/salonipal07/" target="_blank" title="LinkedIn Profile">Linkedin</a>
             <div class="hamburger" onclick="toggleDropdown()">☰</div>
         </div>
         <div class="dropdown" id="navDropdown">
