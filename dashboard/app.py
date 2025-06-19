@@ -6,105 +6,145 @@ from wordcloud import WordCloud
 from collections import Counter
 import re
 
-st.set_page_config(layout="wide", page_title="LinkedIn Job Dashboard")
+st.set_page_config(layout="wide", page_title="LinkedIn Job Dashboard", page_icon="🔍")
 
 # --- Load Data ---
 @st.cache_data
+
 def load_data():
     url = "https://raw.githubusercontent.com/Pal-Saloni/linkedin-job-analysis/main/cleaned/cleaned_jobs.csv"
     return pd.read_csv(url)
 
 df = load_data()
 
-# --- Inject Custom CSS for Animations and Sticky Navbar ---
+# --- Inject Custom CSS for Modern Navbar, Glass Effect, and Dark Theme ---
 st.markdown("""
 <style>
-/* Smooth fade-in */
-section {
-  animation: fadeIn 0.7s ease-in;
-}
-@keyframes fadeIn {
-  from {opacity: 0; transform: translateY(10px);}
-  to {opacity: 1; transform: translateY(0);}
+/* App Background */
+body, .main, .block-container {
+  background: #0f172a;
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
 }
 
-/* Sticky clean navbar */
+/* Navbar with glass effect */
 .navbar {
   position: fixed;
-  top: 60px;
+  top: 0;
   left: 0;
   width: 100%;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e0e0e0;
+  background: rgba(30, 64, 175, 0.6); /* Glass blue */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1.5rem;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  padding: 1rem 2rem;
+  color: white;
+  font-weight: bold;
 }
 
 .logo {
-  font-family: 'Cursive';
   font-size: 1.5rem;
-  font-weight: bold;
-  color: #1f77b4;
+  font-family: 'Cursive';
+  color: white;
   animation: slideInLeft 1s ease;
 }
 
-.menu {
-  display: none;
+.nav-right {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #cbd5e1;
 }
 
 .hamburger {
-  display: inline-block;
+  display: none;
+  flex-direction: column;
   cursor: pointer;
+  margin-left: 1rem;
 }
 
 .hamburger div {
   width: 25px;
   height: 3px;
-  background-color: #1f77b4;
-  margin: 5px 0;
+  background-color: white;
+  margin: 4px 0;
   transition: 0.4s;
 }
 
-@keyframes slideInLeft {
-  from {transform: translateX(-50px); opacity: 0;}
-  to {transform: translateX(0); opacity: 1;}
+.menu {
+  display: none;
+  flex-direction: column;
+  position: fixed;
+  top: 60px;
+  right: 0;
+  background-color: rgba(30, 64, 175, 0.9);
+  backdrop-filter: blur(8px);
+  padding: 1rem;
+  z-index: 9998;
+  border-radius: 0 0 0 10px;
+}
+
+.menu a {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 0;
+}
+
+.show {
+  display: flex !important;
 }
 
 @media screen and (max-width: 768px) {
-  .menu {
-    display: block;
-    position: absolute;
-    top: 60px;
-    left: 0;
-    width: 100%;
-    background-color: white;
-    border-top: 1px solid #ccc;
-    text-align: center;
-    z-index: 9998;
-    animation: fadeIn 0.5s ease;
+  .nav-right {
+    display: none;
   }
-  .menu a {
-    display: block;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
+  .hamburger {
+    display: flex;
   }
 }
 </style>
 
+<script>
+function toggleMenu() {
+  const menu = document.querySelector('.menu');
+  menu.classList.toggle('show');
+}
+</script>
+
 <div class="navbar">
   <div class="logo">Saloni Pal</div>
-  <div class="hamburger" onclick="document.querySelector('.menu').classList.toggle('show')">
-    <div></div><div></div><div></div>
+  <div class="nav-right">
+    <a class="nav-link" href="https://www.linkedin.com/in/saloni-pal-6b58352b4" target="_blank">LinkedIn</a>
+    <a class="nav-link" href="https://github.com/Pal-Saloni" target="_blank">GitHub</a>
+    <div class="hamburger" onclick="toggleMenu()">
+      <div></div><div></div><div></div>
+    </div>
   </div>
 </div>
+
 <div class="menu">
+  <a href="#">Home</a>
+  <a href="#">Top Titles</a>
+  <a href="#">Top Companies</a>
+  <a href="#">Remote Jobs</a>
   <a href="https://www.linkedin.com/in/saloni-pal-6b58352b4" target="_blank">LinkedIn</a>
   <a href="https://github.com/Pal-Saloni" target="_blank">GitHub</a>
 </div>
+
+<br><br><br><br>
 """, unsafe_allow_html=True)
 
 # --- Sidebar Filters ---
@@ -118,7 +158,6 @@ if location_filter:
 if job_type_filter:
     df = df[df['ONSITE REMOTE'].isin(job_type_filter)]
 
-st.markdown('<section>', unsafe_allow_html=True)
 st.title("🔍 LinkedIn Job Market Dashboard")
 
 # --- Key Metrics ---
@@ -143,6 +182,7 @@ fig, ax = plt.subplots()
 sns.barplot(x=df['LOCATION'].value_counts().head(10).values,
             y=df['LOCATION'].value_counts().head(10).index, palette="Blues_d", ax=ax)
 ax.set_xlabel("Number of Jobs")
+ax.set_ylabel("")
 st.pyplot(fig)
 
 # --- Remote vs Onsite ---
@@ -155,7 +195,7 @@ st.pyplot(fig2)
 
 # --- Time Trends ---
 if 'POSTED DATE' in df.columns:
-    st.subheader("📅 Job Postings Over Time")
+    st.subheader("🗕️ Job Postings Over Time")
     df['POSTED DATE'] = pd.to_datetime(df['POSTED DATE'], errors='coerce')
     trend = df.groupby(df['POSTED DATE'].dt.to_period('M')).size()
     st.line_chart(trend)
@@ -199,7 +239,7 @@ if {'COMPANY', 'LOCATION'}.issubset(df.columns):
     st.pyplot(fig_heat)
 
 # --- WordCloud ---
-show_wc = st.checkbox("☁ Show Word Cloud from Descriptions")
+show_wc = st.checkbox("☕ Show Word Cloud from Descriptions")
 if show_wc and 'DESCRIPTION' in df.columns:
     text = ' '.join(df['DESCRIPTION'].dropna().astype(str))
     wc = WordCloud(max_words=100, background_color='white').generate(text)
@@ -211,4 +251,3 @@ if show_wc and 'DESCRIPTION' in df.columns:
 # --- Footer ---
 st.markdown("---")
 st.caption("Made by Saloni Pal | Data Source: LinkedIn")
-st.markdown('</section>', unsafe_allow_html=True)
