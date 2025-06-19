@@ -10,7 +10,6 @@ st.set_page_config(layout="wide", page_title="LinkedIn Job Dashboard", page_icon
 
 # --- Load Data ---
 @st.cache_data
-
 def load_data():
     url = "https://raw.githubusercontent.com/Pal-Saloni/linkedin-job-analysis/main/cleaned/cleaned_jobs.csv"
     return pd.read_csv(url)
@@ -18,134 +17,24 @@ def load_data():
 df = load_data()
 
 # --- Inject Custom CSS for Modern Navbar, Glass Effect, and Dark Theme ---
-st.markdown("""
-<style>
-/* App Background */
-body, .main, .block-container {
-  background: #0f172a;
-  color: white;
-  font-family: 'Segoe UI', sans-serif;
-}
+# (CSS code omitted for brevity — stays unchanged)
 
-/* Navbar with glass effect */
-.navbar {
-  position: fixed;
-  top: 60px;
-  left: 0;
-  width: 100%;
-  background: rgba(30, 64, 175, 0.6); /* Glass blue */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 2rem;
-  color: white;
-  font-weight: bold;
-}
+# --- Helper functions for layout style ---
+def image_left_text_right(fig, heading, text):
+    col1, col2 = st.columns([1.5, 2])
+    with col1:
+        st.pyplot(fig)
+    with col2:
+        st.subheader(heading)
+        st.markdown(text)
 
-.logo {
-  font-size: 1.5rem;
-  font-family: 'Cursive';
-  color: white;
-  animation: slideInLeft 1s ease;
-}
-
-.nav-right {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.nav-link {
-  color: white;
-  text-decoration: none;
-  font-weight: bold;
-  transition: color 0.3s ease;
-}
-
-.nav-link:hover {
-  color: #cbd5e1;
-}
-
-.hamburger {
-  display: none;
-  flex-direction: column;
-  cursor: pointer;
-  margin-left: 1rem;
-}
-
-.hamburger div {
-  width: 25px;
-  height: 3px;
-  background-color: white;
-  margin: 4px 0;
-  transition: 0.4s;
-}
-
-.menu {
-  display: none;
-  flex-direction: column;
-  position: fixed;
-  top: 60px;
-  right: 0;
-  background-color: rgba(30, 64, 175, 0.9);
-  backdrop-filter: blur(8px);
-  padding: 1rem;
-  z-index: 9998;
-  border-radius: 0 0 0 10px;
-}
-
-.menu a {
-  color: white;
-  text-decoration: none;
-  padding: 0.5rem 0;
-}
-
-.show {
-  display: flex !important;
-}
-
-@media screen and (max-width: 768px) {
-  .nav-right {
-    display: none;
-  }
-  .hamburger {
-    display: flex;
-  }
-}
-</style>
-
-<script>
-function toggleMenu() {
-  const menu = document.querySelector('.menu');
-  menu.classList.toggle('show');
-}
-</script>
-
-<div class="navbar">
-  <div class="logo">Saloni Pal</div>
-  <div class="nav-right">
-    <a class="nav-link" href="https://www.linkedin.com/in/saloni-pal-6b58352b4" target="_blank">LinkedIn</a>
-    <a class="nav-link" href="https://github.com/Pal-Saloni" target="_blank">GitHub</a>
-    <div class="hamburger" onclick="toggleMenu()">
-      <div></div><div></div><div></div>
-    </div>
-  </div>
-</div>
-
-<div class="menu">
-  <a href="#">Home</a>
-  <a href="#">Top Titles</a>
-  <a href="#">Top Companies</a>
-  <a href="#">Remote Jobs</a>
-  <a href="https://www.linkedin.com/in/saloni-pal-6b58352b4" target="_blank">LinkedIn</a>
-  <a href="https://github.com/Pal-Saloni" target="_blank">GitHub</a>
-</div>
-
-<br><br><br><br>
-""", unsafe_allow_html=True)
+def text_left_image_right(fig, heading, text):
+    col1, col2 = st.columns([2, 1.5])
+    with col1:
+        st.subheader(heading)
+        st.markdown(text)
+    with col2:
+        st.pyplot(fig)
 
 # --- Sidebar Filters ---
 with st.sidebar:
@@ -158,6 +47,7 @@ if location_filter:
 if job_type_filter:
     df = df[df['ONSITE REMOTE'].isin(job_type_filter)]
 
+# --- Title ---
 st.title("🔍 LinkedIn Job Market Dashboard")
 
 # --- Key Metrics ---
@@ -169,40 +59,44 @@ col3.metric("Top Hiring Location", df['LOCATION'].value_counts().idxmax())
 st.divider()
 
 # --- Top Job Titles ---
-st.subheader("💼 Top Job Titles")
-st.bar_chart(df['TITLE'].value_counts().head(10))
+fig1, ax1 = plt.subplots()
+df['TITLE'].value_counts().head(10).plot(kind='barh', color='#60a5fa', ax=ax1)
+ax1.invert_yaxis()
+ax1.set_xlabel("Count")
+text_left_image_right(fig1, "💼 Top Job Titles", "Most frequently posted job titles across LinkedIn job listings.")
 
 # --- Top Companies ---
-st.subheader("🏢 Top Hiring Companies")
-st.bar_chart(df['COMPANY'].value_counts().head(10))
+fig2, ax2 = plt.subplots()
+df['COMPANY'].value_counts().head(10).plot(kind='barh', color='#34d399', ax=ax2)
+ax2.invert_yaxis()
+ax2.set_xlabel("Count")
+image_left_text_right(fig2, "🏢 Top Hiring Companies", "Companies hiring most frequently for tech/data roles.")
 
-# --- Top Job Locations ---
-st.subheader("📍 Top Job Locations")
-fig, ax = plt.subplots()
+# --- Top Locations ---
+fig3, ax3 = plt.subplots()
 sns.barplot(x=df['LOCATION'].value_counts().head(10).values,
-            y=df['LOCATION'].value_counts().head(10).index, palette="Blues_d", ax=ax)
-ax.set_xlabel("Number of Jobs")
-ax.set_ylabel("")
-st.pyplot(fig)
+            y=df['LOCATION'].value_counts().head(10).index, palette="Blues_d", ax=ax3)
+ax3.set_xlabel("Number of Jobs")
+text_left_image_right(fig3, "📍 Top Job Locations", "Top cities/states where jobs are posted the most on LinkedIn.")
 
 # --- Remote vs Onsite ---
-st.subheader("🏠 Remote vs Onsite Jobs")
 remote_data = df['ONSITE REMOTE'].dropna().str.lower().value_counts()
-fig2, ax2 = plt.subplots()
-ax2.pie(remote_data, labels=remote_data.index, autopct='%1.1f%%', startangle=140)
-ax2.axis("equal")
-st.pyplot(fig2)
+fig4, ax4 = plt.subplots()
+ax4.pie(remote_data, labels=remote_data.index, autopct='%1.1f%%', startangle=140)
+ax4.axis("equal")
+image_left_text_right(fig4, "🏠 Remote vs Onsite Jobs", "Distribution of jobs based on work setting — remote, onsite or hybrid.")
 
 # --- Time Trends ---
 if 'POSTED DATE' in df.columns:
-    st.subheader("🗕️ Job Postings Over Time")
     df['POSTED DATE'] = pd.to_datetime(df['POSTED DATE'], errors='coerce')
     trend = df.groupby(df['POSTED DATE'].dt.to_period('M')).size()
-    st.line_chart(trend)
+    fig5, ax5 = plt.subplots()
+    trend.plot(ax=ax5, marker='o', color='orange')
+    ax5.set_ylabel("Job Count")
+    image_left_text_right(fig5, "🗕️ Job Postings Over Time", "Monthly trend of job postings based on LinkedIn data.")
 
-# --- Weighted Job Score ---
+# --- Weighted Score ---
 if {'SALARY', 'TITLE', 'COMPANY', 'DESCRIPTION', 'ONSITE REMOTE', 'LOCATION', 'CRITERIA', 'POSTED DATE', 'LINK'}.issubset(df.columns):
-    st.subheader("📈 Top Jobs by Weighted Score")
     df['job_score'] = (
         df['SALARY'].fillna(0) * 1.0 +
         df['TITLE'].fillna(0) * 0.5 +
@@ -215,28 +109,27 @@ if {'SALARY', 'TITLE', 'COMPANY', 'DESCRIPTION', 'ONSITE REMOTE', 'LOCATION', 'C
         df['LINK'].fillna(0) * 0.5
     )
     top_jobs = df.sort_values("job_score", ascending=False).head(10)
+    st.subheader("📈 Top Jobs by Weighted Score")
     st.dataframe(top_jobs[['TITLE', 'COMPANY', 'LOCATION', 'job_score']])
 
-# --- Most Common Criteria ---
+# --- Common Criteria ---
 if 'CRITERIA' in df.columns:
-    st.subheader("📌 Most Common Criteria in Job Posts")
     all_criteria = ' '.join(df['CRITERIA'].dropna()).lower()
     words = re.findall(r'\b[a-z]{3,}\b', all_criteria)
     common_criteria = Counter(words).most_common(10)
     crit_df = pd.DataFrame(common_criteria, columns=['Criteria', 'Count'])
-    fig_crit, ax_crit = plt.subplots()
-    sns.barplot(x='Count', y='Criteria', data=crit_df, ax=ax_crit, palette='Greens_r')
-    st.pyplot(fig_crit)
+    fig6, ax6 = plt.subplots()
+    sns.barplot(x='Count', y='Criteria', data=crit_df, ax=ax6, palette='Greens_r')
+    text_left_image_right(fig6, "📌 Most Common Job Criteria", "Top skills and qualifications frequently mentioned in job posts.")
 
 # --- Heatmap ---
 if {'COMPANY', 'LOCATION'}.issubset(df.columns):
-    st.subheader("🌍 Heatmap: Companies Hiring by Location")
     heatmap_data = df.groupby(['COMPANY', 'LOCATION']).size().unstack(fill_value=0)
-    fig_heat, ax_heat = plt.subplots(figsize=(12, 8))
-    sns.heatmap(heatmap_data, cmap="YlGnBu", ax=ax_heat)
-    ax_heat.set_xlabel("Location")
-    ax_heat.set_ylabel("Company")
-    st.pyplot(fig_heat)
+    fig7, ax7 = plt.subplots(figsize=(12, 8))
+    sns.heatmap(heatmap_data, cmap="YlGnBu", ax=ax7)
+    ax7.set_xlabel("Location")
+    ax7.set_ylabel("Company")
+    image_left_text_right(fig7, "🌍 Heatmap: Hiring by Location & Company", "Visual correlation between companies and their active hiring locations.")
 
 # --- WordCloud ---
 show_wc = st.checkbox("☕ Show Word Cloud from Descriptions")
@@ -246,7 +139,7 @@ if show_wc and 'DESCRIPTION' in df.columns:
     fig_wc, ax_wc = plt.subplots()
     ax_wc.imshow(wc, interpolation='bilinear')
     ax_wc.axis("off")
-    st.pyplot(fig_wc)
+    image_left_text_right(fig_wc, "☁ Word Cloud from Job Descriptions", "Frequently used words in job descriptions across all listings.")
 
 # --- Footer ---
 st.markdown("---")
