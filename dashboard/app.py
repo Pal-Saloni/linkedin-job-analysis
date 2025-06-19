@@ -60,6 +60,7 @@ st.markdown("""
 
         .nav-icons a:hover {
             color: #d3e0eb;
+            text-decoration: underline;
         }
 
         .hamburger {
