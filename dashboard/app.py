@@ -43,7 +43,7 @@ st.markdown("""
         .logo {
             font-family: 'Pacifico', cursive;
             font-size: 24px;
-            color: #1f2937;
+            color: #edf2f5;
         }
 
         .nav-icons {
