@@ -30,7 +30,7 @@ body, .main, .block-container {
 /* Navbar with glass effect */
 .navbar {
   position: fixed;
-  top: 60;
+  top: 60px;
   left: 0;
   width: 100%;
   background: rgba(30, 64, 175, 0.6); /* Glass blue */
