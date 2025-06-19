@@ -121,8 +121,8 @@ st.markdown("""
         <div class="logo">Saloni Pal</div>
         <div class="nav-icons">
             <input type="text" id="searchInput" class="search-input" placeholder="Search section... 🔍" title="Search for section name">
-            <a href="https://github.com/Pal-Saloni" target="_blank" title="GitHub Profile">🐱‍💻</a>
-            <a href="https://www.linkedin.com/in/salonipal07/" target="_blank" title="LinkedIn Profile">💼</a>
+            <a href="https://github.com/Pal-Saloni" target="_blank" title="GitHub Profile">Github</a>
+            <a href="https://www.linkedin.com/in/salonipal07/" target="_blank" title="LinkedIn Profile">Linkedin</a>
             <div class="hamburger" onclick="toggleDropdown()">☰</div>
         </div>
         <div class="dropdown" id="navDropdown">
