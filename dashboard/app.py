@@ -16,7 +16,7 @@ def load_data():
 
 df = load_data()
 
-# --- Custom CSS & JS for Navbar ---
+# --- Custom Navbar (No Search) ---
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
@@ -43,7 +43,7 @@ st.markdown("""
         .logo {
             font-family: 'Pacifico', cursive;
             font-size: 24px;
-            color: #edf2f5;
+            color: #1f2937;
         }
 
         .nav-icons {
@@ -93,6 +93,12 @@ st.markdown("""
 
         .dropdown.show {
             display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
         }
 
         .main > div:first-child {
@@ -101,28 +107,24 @@ st.markdown("""
 
         @media screen and (max-width: 768px) {
             .nav-icons {
-                gap: 10px;
+                gap: 12px;
             }
 
             .logo {
                 font-size: 20px;
             }
-        }
 
-        .search-input {
-            padding: 4px 8px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 14px;
+            .hamburger {
+                font-size: 24px;
+            }
         }
     </style>
 
     <div class="navbar">
         <div class="logo">Saloni Pal</div>
         <div class="nav-icons">
-            <input type="text" id="searchInput" class="search-input" placeholder="Search section... 🔍" title="Search for section name">
-            <a href="https://github.com/Pal-Saloni" target="_blank" title="GitHub Profile">Github</a>
-            <a href="https://www.linkedin.com/in/salonipal07/" target="_blank" title="LinkedIn Profile">Linkedin</a>
+            <a href="https://github.com/Pal-Saloni" target="_blank" title="GitHub Profile">🐱‍💻</a>
+            <a href="https://www.linkedin.com/in/salonipal07/" target="_blank" title="LinkedIn Profile">💼</a>
             <div class="hamburger" onclick="toggleDropdown()">☰</div>
         </div>
         <div class="dropdown" id="navDropdown">
@@ -140,9 +142,17 @@ st.markdown("""
 
     <script>
         function toggleDropdown() {
-            var dropdown = document.getElementById("navDropdown");
+            const dropdown = document.getElementById("navDropdown");
             dropdown.classList.toggle("show");
         }
+
+        document.addEventListener("click", function (event) {
+            const dropdown = document.getElementById("navDropdown");
+            const button = event.target.closest(".hamburger");
+            if (!dropdown.contains(event.target) && !button) {
+                dropdown.classList.remove("show");
+            }
+        });
 
         document.querySelectorAll('.dropdown a').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -154,25 +164,13 @@ st.markdown("""
                         behavior: 'smooth'
                     });
                 }
-            });
-        });
-
-        // Optional: Simple search box filter
-        document.getElementById("searchInput").addEventListener("keyup", function () {
-            var filter = this.value.toLowerCase();
-            var links = document.querySelectorAll(".dropdown a");
-            links.forEach(link => {
-                if (link.textContent.toLowerCase().includes(filter)) {
-                    link.style.display = "block";
-                } else {
-                    link.style.display = "none";
-                }
+                document.getElementById("navDropdown").classList.remove("show");
             });
         });
     </script>
 """, unsafe_allow_html=True)
 
-# --- Helper Layout Functions ---
+# --- Layout Helpers ---
 def image_left_text_right(fig, heading, text):
     col1, col2 = st.columns([1.5, 2])
     with col1:
@@ -189,7 +187,7 @@ def text_left_image_right(fig, heading, text):
     with col2:
         st.pyplot(fig)
 
-# --- Sidebar Filters ---
+# --- Sidebar ---
 with st.sidebar:
     st.header(">> Filter Jobs")
     location_filter = st.multiselect("📍 Select Location(s)", options=df['LOCATION'].dropna().unique())
@@ -209,7 +207,7 @@ col2.metric("Remote Jobs", df['ONSITE REMOTE'].str.contains("Remote", case=False
 col3.metric("Top Hiring Location", df['LOCATION'].value_counts().idxmax())
 st.divider()
 
-# --- Section: Top Job Titles ---
+# --- Sections ---
 st.markdown('<a name="top-jobs"></a>', unsafe_allow_html=True)
 fig1, ax1 = plt.subplots()
 df['TITLE'].value_counts().head(10).plot(kind='barh', color='#60a5fa', ax=ax1)
@@ -217,7 +215,6 @@ ax1.invert_yaxis()
 ax1.set_xlabel("Count")
 text_left_image_right(fig1, "💼 Top Job Titles", "Most frequently posted job titles across LinkedIn job listings.")
 
-# --- Section: Top Companies ---
 st.markdown('<a name="top-companies"></a>', unsafe_allow_html=True)
 fig2, ax2 = plt.subplots()
 df['COMPANY'].value_counts().head(10).plot(kind='barh', color='#34d399', ax=ax2)
@@ -225,7 +222,6 @@ ax2.invert_yaxis()
 ax2.set_xlabel("Count")
 image_left_text_right(fig2, "🏢 Top Hiring Companies", "Companies hiring most frequently for tech/data roles.")
 
-# --- Section: Top Locations ---
 st.markdown('<a name="top-locations"></a>', unsafe_allow_html=True)
 fig3, ax3 = plt.subplots()
 sns.barplot(x=df['LOCATION'].value_counts().head(10).values,
@@ -233,7 +229,6 @@ sns.barplot(x=df['LOCATION'].value_counts().head(10).values,
 ax3.set_xlabel("Number of Jobs")
 text_left_image_right(fig3, "📍 Top Job Locations", "Top cities/states where jobs are posted the most on LinkedIn.")
 
-# --- Section: Remote vs Onsite ---
 st.markdown('<a name="remote-onsite"></a>', unsafe_allow_html=True)
 remote_data = df['ONSITE REMOTE'].dropna().str.lower().value_counts()
 fig4, ax4 = plt.subplots()
@@ -241,7 +236,6 @@ ax4.pie(remote_data, labels=remote_data.index, autopct='%1.1f%%', startangle=140
 ax4.axis("equal")
 image_left_text_right(fig4, "🏠 Remote vs Onsite Jobs", "Distribution of jobs based on work setting — remote, onsite or hybrid.")
 
-# --- Section: Time Trends ---
 st.markdown('<a name="time-trends"></a>', unsafe_allow_html=True)
 if 'POSTED DATE' in df.columns:
     df['POSTED DATE'] = pd.to_datetime(df['POSTED DATE'], errors='coerce')
@@ -251,9 +245,8 @@ if 'POSTED DATE' in df.columns:
     ax5.set_ylabel("Job Count")
     image_left_text_right(fig5, "🗕️ Job Postings Over Time", "Monthly trend of job postings based on LinkedIn data.")
 
-# --- Section: Weighted Score ---
 st.markdown('<a name="weighted-score"></a>', unsafe_allow_html=True)
-if {'SALARY', 'TITLE', 'COMPANY', 'DESCRIPTION', 'ONSITE REMOTE', 'LOCATION', 'CRITERIA', 'POSTED DATE', 'LINK'}.issubset(df.columns):
+if {'SALARY', 'TITLE', 'COMPANY', 'DESCRIPTION', 'ONSITE REMOTE', 'LOCATION', 'CRITERIA'}.issubset(df.columns):
     df['job_score'] = (
         df['SALARY'].fillna(0).astype(str).str.len() * 1.0 +
         df['TITLE'].fillna(0).astype(str).str.len() * 0.5 +
@@ -267,7 +260,6 @@ if {'SALARY', 'TITLE', 'COMPANY', 'DESCRIPTION', 'ONSITE REMOTE', 'LOCATION', 'C
     st.subheader("📈 Top Jobs by Weighted Score")
     st.dataframe(top_jobs[['TITLE', 'COMPANY', 'LOCATION', 'job_score']])
 
-# --- Section: Common Criteria ---
 st.markdown('<a name="common-criteria"></a>', unsafe_allow_html=True)
 if 'CRITERIA' in df.columns:
     all_criteria = ' '.join(df['CRITERIA'].dropna()).lower()
@@ -278,7 +270,6 @@ if 'CRITERIA' in df.columns:
     sns.barplot(x='Count', y='Criteria', data=crit_df, ax=ax6, palette='Greens_r')
     text_left_image_right(fig6, "📌 Most Common Job Criteria", "Top skills and qualifications frequently mentioned in job posts.")
 
-# --- Section: Heatmap ---
 st.markdown('<a name="heatmap"></a>', unsafe_allow_html=True)
 if {'COMPANY', 'LOCATION'}.issubset(df.columns):
     heatmap_data = df.groupby(['COMPANY', 'LOCATION']).size().unstack(fill_value=0)
@@ -288,7 +279,6 @@ if {'COMPANY', 'LOCATION'}.issubset(df.columns):
     ax7.set_ylabel("Company")
     image_left_text_right(fig7, "🌍 Heatmap: Hiring by Location & Company", "Visual correlation between companies and their active hiring locations.")
 
-# --- Section: WordCloud ---
 st.markdown('<a name="wordcloud"></a>', unsafe_allow_html=True)
 show_wc = st.checkbox("☕ Show Word Cloud from Descriptions")
 if show_wc and 'DESCRIPTION' in df.columns:
