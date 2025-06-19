@@ -59,7 +59,7 @@ st.markdown("""
         }
 
         .nav-icons a:hover {
-            color: #d3e0eb;
+            color: #969899;
             text-decoration: underline;
         }
 
