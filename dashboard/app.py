@@ -23,7 +23,7 @@ st.markdown("""
 
         .navbar {
             position: fixed;
-            top: 0;
+            top: 60px;
             left: 0;
             right: 0;
             height: 65px;
