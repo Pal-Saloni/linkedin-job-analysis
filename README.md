@@ -2,7 +2,7 @@
 # 📊 LinkedIn Job Listings Analysis
 
 A data analysis project exploring job trends, skill demands, company hiring patterns, and remote work insights using LinkedIn job data from Africa.
-
+link of hosted app :  [App](https://linkedin-job-analysis-awudjqgsyoh7vaaswyvjsk.streamlit.app/) 
 ---
 
 ## 🔍 Project Overview
@@ -21,7 +21,8 @@ linkedin-job-analysis/
 │
 ├── cleaned/                      # Cleaned version of the dataset
 │   └── cleaned_jobs.csv
-│
+│├── dashboard/                      # Hosted app of dashboard with insights
+│   └── app.py
 ├── notebooks/                    # Jupyter Notebooks for analysis
 │   └── 01-data-cleaning.ipynb
 │   └── 02-eda-visualizations.ipynb
