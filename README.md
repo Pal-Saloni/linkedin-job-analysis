@@ -3,6 +3,7 @@
 
 A data analysis project exploring job trends, skill demands, company hiring patterns, and remote work insights using LinkedIn job data from Africa.
 link of hosted app :  [App](https://linkedin-job-analysis-awudjqgsyoh7vaaswyvjsk.streamlit.app/) 
+
 ---
 
 ## 🔍 Project Overview
